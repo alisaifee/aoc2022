@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 input=$1
 
 part1() {

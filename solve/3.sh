@@ -1,4 +1,6 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
+source $(dirname -- ${BASH_SOURCE[0]})/common.sh
+require_bash 4
 
 input=$(cat $1)
 declare -A mapping

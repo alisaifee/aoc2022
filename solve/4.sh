@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 part1() {
 	count=0
 	for pairs in $(cat $1); do
