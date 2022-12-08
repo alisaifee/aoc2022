@@ -24,8 +24,6 @@ part1() {
 	j=0
 	declare -A maxleft
 	declare -A maxabove
-	declare -A maxright
-	declare -A maxbelow
 	declare -A maxleftall
 	declare -A maxaboveall
 	while read line; do
@@ -40,20 +38,6 @@ part1() {
 			if [[ -z ${maxaboveall[$j]} ]] || ((maxaboveall[$j] < $height)); then
 				maxaboveall[$j]=$height
 			fi
-			jr=$j
-			ib=$i
-			while (($jr > 0)); do
-				if [[ ! -z ${map[$i, $(((jr - 1)))]} ]] && (($height >= ${map[$i, $(((jr - 1)))]})); then
-					maxright[$i, $(((jr - 1)))]=$height
-				fi
-				((--jr))
-			done
-			while (($ib > 0)); do
-				if [[ ! -z ${map[$(((ib - 1))), $j]} ]] && (($height >= ${map[$(((ib - 1))), $j]})); then
-					maxbelow[$(((ib - 1))), $j]=$height
-				fi
-				((--ib))
-			done
 			map[$i, $j]=$height
 		done
 		jmax=$j
@@ -69,11 +53,31 @@ part1() {
 		while (($j < $jmax)); do
 			((++j))
 			height=${map[$i, $j]}
-			if [[ -z ${maxleft[$i, $j]} ]] || [[ -z ${maxabove[$i, $j]} ]] || [[ -z ${maxbelow[$i, $j]} ]] || [[ -z ${maxright[$i, $j]} ]]; then
+			if [[ -z ${maxleft[$i, $j]} ]] || [[ -z ${maxabove[$i, $j]} ]]; then
 				visible=$(((visible + 1)))
 			else
-				if (($height <= ${maxleft[$i, $j]})) && (($height <= ${maxabove[$i, $j]})) && (($height <= ${maxright[$i, $j]})) && (($height <= ${maxbelow[$i, $j]})); then
-					continue
+				if (($height <= ${maxleft[$i, $j]})) && (($height <= ${maxabove[$i, $j]})); then
+					_i=$i
+					_j=$j
+					righthidden=0
+					bottomhidden=0
+					while (($_i < $imax)); do
+						((++_i))
+						if ((${map[$_i, $j]} >= $height)); then
+							righthidden=1
+							break
+						fi
+					done
+					while (($_j < $jmax)); do
+						((++_j))
+						if ((${map[$i, $_j]} >= $height)); then
+							bottomhidden=1
+							break
+						fi
+					done
+					if (($righthidden == 0)) || (($bottomhidden == 0)); then
+						((visible++))
+					fi
 				else
 					((visible++))
 				fi
