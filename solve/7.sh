@@ -5,10 +5,8 @@ require_bash 4
 calculateSizes() {
 	declare -a dirstack
 	declare -n sizes="$1"
-	mode=command
 	while read line; do
 		if [[ "$line" =~ ^\$[[:space:]](cd|ls)([[:space:]](.*))* ]]; then
-			mode="cmd"
 			cmd=${BASH_REMATCH[1]}
 			arg=${BASH_REMATCH[3]}
 			if [[ "$cmd" = "cd" ]]; then
@@ -23,8 +21,6 @@ calculateSizes() {
 						dirstack+=($arg)
 					fi
 				fi
-			elif [[ "$cmd" = "ls" ]]; then
-				mode="list"
 			fi
 		else
 			if [[ ! "$line" =~ ^dir.* ]]; then
