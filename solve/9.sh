@@ -74,7 +74,7 @@ part1() {
 				esac
 				echo >&2 $i $j $ti $tj $direction
 			else
-				if ((jdist + idist == 0)) || ((jdist + idist == 2)) || ((jdist + idist == -2)); then
+				if ((jdistabs == 1 && jdistabs == 1)); then
 					:
 				else
 					case $direction in
@@ -162,21 +162,20 @@ part2() {
 			fi
 			idistabs=${idist#-}
 			jdistabs=${jdist#-}
-			if ((idistabs == 0)) && ((jdistabs <= 1)); then
-				:
-			elif ((jdistabs == 0)) && ((idistabs <= 1)); then
+			if ((idistabs <= 1)) && ((jdistabs <= 1)); then
 				:
 			else
-				if [[ (($idistabs == 0)) && (($jdistabs == 2)) ]] || [[ (($jdistabs == 0)) && (($idistabs == 2)) ]]; then
+				if (($idist == 0)) || (($jdist == 0)); then
+
 					case $direction in
 					L) ((--tj)) ;;
 					R) ((++tj)) ;;
 					U) ((++ti)) ;;
 					D) ((--ti)) ;;
 					esac
-					echo >&2 move knot $knot: $i $j $ti $tj $direction
+					echo >&2 move knot $knot $ti $tj
 				else
-					if ((jdist + idist == 0)) || ((jdist + idist == 2)) || ((jdist + idist == -2)); then
+					if ((idistabs == 1 && jdistabs == 1)); then
 						:
 					else
 						case $direction in
@@ -197,8 +196,8 @@ part2() {
 							((--tj))
 							;;
 						esac
+						echo >&2 move knot $knot $ti $tj
 					fi
-					echo >&2 move knot $knot: $i $j $ti $tj $direction
 				fi
 				knots[$knot]="$ti,$tj"
 				arr+=("$ti,$tj")
