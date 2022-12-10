@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 part1() {
-	echo
 	cat $1 |
 		sed -e 's/noop/0/' -Ee 's/addx (.*)/0\n\1/' |
 		sed -Ee 's/^([[:digit:]]+)/p\n\1+/' -Ee 's/^-([[:digit:]]+)/p\n\1-/' |
