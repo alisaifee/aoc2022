@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+source $(dirname -- ${BASH_SOURCE[0]})/common.sh
+require_bash 4
+
 initializeMonkeys() {
 	declare -n inventory="$2"
 	declare -n strategy="$3"
