@@ -40,6 +40,7 @@ getNextMove() {
 	local j=$2
 	local depth=$3
 	local v=${markMapping[${m["$i,$j"]}]}
+	local terminal=$6
 	if [[ -n ${t["$i,$j"]} ]] && ((${t["$i,$j"]} <= $depth)); then
 		return
 	fi
@@ -58,7 +59,7 @@ getNextMove() {
 			local value=${m[$coordinate]}
 			if [[ "$value" != "E" ]]; then
 				if ((v - ${markMapping[$value]} <= 1)); then
-					if [[ "$value" = "S" ]]; then
+					if [[ "$value" = "$terminal" ]]; then
 						echo $((1 + depth))
 						break
 					else
@@ -80,7 +81,7 @@ getNextMove() {
 	for coordinate in ${next[@]}; do
 		local ii=${coordinate%,*}
 		local jj=${coordinate/#*,/}
-		getNextMove $ii $jj $((depth + 1)) $x $y
+		getNextMove $ii $jj $((depth + 1)) $x $y $terminal
 	done
 
 }
@@ -93,7 +94,20 @@ part1() {
 	end=${directions["end"]}
 	i=${end%,*}
 	j=${end/#*,/}
-	getNextMove $i $j 0 heightMap travelled | sort | uniq | sort -n | head -n1
+	getNextMove $i $j 0 heightMap travelled "S" | sort | uniq | sort -n | head -n1
+}
+
+part2() {
+	declare -A heightMap
+	declare -A directions
+	declare -A travelled
+	buildHeightMap $1 heightMap directions
+	start=${directions["start"]}
+	end=${directions["end"]}
+	i=${end%,*}
+	j=${end/#*,/}
+	getNextMove $i $j 0 heightMap travelled "a" | sort | uniq | sort -n | head -n1
 }
 
 echo part 1: "$(part1 $1)"
+echo part 2: "$(part2 $1)"
