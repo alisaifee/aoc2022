@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-buildGrid(){
+buildGrid() {
 	local -n gridScan=$2
 	local -n gridInfo=$3
 	local -a rocks
@@ -32,23 +32,23 @@ buildGrid(){
 		IFS="$OIFS"
 		unset x1
 		unset y1
-	done < $1
+	done <$1
 	IFS="$OIFS"
 	gridScan["500,0"]="+"
 	local minx maxy minx maxx
 	for coordinate in ${!gridScan[@]}; do
 		x=${coordinate%,*}
 		y=${coordinate/#*,/}
-		if [[ -z $minx ]] || (( x < minx)); then
+		if [[ -z $minx ]] || ((x < minx)); then
 			minx=$x
 		fi
-		if [[ -z $maxx ]] || (( x > maxx)); then
+		if [[ -z $maxx ]] || ((x > maxx)); then
 			maxx=$x
 		fi
-		if [[ -z $miny ]] || (( y < miny)); then
+		if [[ -z $miny ]] || ((y < miny)); then
 			miny=$y
 		fi
-		if [[ -z $maxy ]] || (( y > maxy)); then
+		if [[ -z $maxy ]] || ((y > maxy)); then
 			maxy=$y
 		fi
 	done
@@ -63,7 +63,7 @@ buildGrid(){
 	gridInfo["max"]="$maxx,$maxy"
 
 }
-renderGrid(){
+renderGrid() {
 	local -n renderedGrid=$1
 	local -n i=$2
 	local minx miny maxx maxy
@@ -74,17 +74,17 @@ renderGrid(){
 	for _y in $(seq $miny $maxy); do
 		for _x in $(seq $minx $maxx); do
 			if [[ -z "${renderedGrid["$_x,$_y"]}" ]]; then
-				>&2 echo -n "."
+				echo >&2 -n "."
 			else
-				>&2 echo -n "${renderedGrid["$_x,$_y"]}"
+				echo >&2 -n "${renderedGrid["$_x,$_y"]}"
 			fi
 		done
-		>&2 echo
+		echo >&2
 	done
 
-
 }
-dropSand(){
+
+dropSand() {
 	local -n opGrid=$1
 	local -n i=$2
 	local minx=$3
@@ -92,13 +92,13 @@ dropSand(){
 	local maxx=$5
 	local maxy=$6
 	local count=$7
+	local abyss=$8
 	local curx=500
-	local cury=1
+	local cury=$((abyss ? 1 : 0))
 	local lastx lasty
 	local last=
-
 	while [[ 1 ]]; do
-		if (( cury >= maxy )); then
+		if ((cury >= maxy)); then
 			unset opGrid["$lastx,$lasty"]
 			unset lastx
 			unset lasty
@@ -108,25 +108,25 @@ dropSand(){
 			opGrid["$curx,$cury"]="O"
 			lastx=$curx
 			lasty=$cury
-		elif [[ -z ${g["$curx,$cury"]} ]] && [[ -n $lastx ]] && (( lasty+1 == cury )); then
+		elif [[ -z ${opGrid["$curx,$cury"]} ]] && [[ -n $lastx ]] && ((lasty + 1 == cury)); then
 			unset opGrid["$lastx,$lasty"]
 			opGrid["$curx,$cury"]="O"
 			lastx=$curx
 			lasty=$cury
 		fi
-		if [[ -z ${opGrid["$curx,$((1+cury))"]} ]]; then
+		if [[ -z ${opGrid["$curx,$((1 + cury))"]} ]]; then
 			:
 		elif [[ -n ${opGrid["$curx,$cury"]} ]]; then
-			if [[ -z ${opGrid["$((curx-1)),$((cury+1))"]} ]]; then
+			if [[ -z ${opGrid["$((curx - 1)),$((cury + 1))"]} ]]; then
 				((--curx))
-				if (( curx < minx )); then
+				if ((curx < minx)); then
 					unset lastx
 					unset lasty
 					break
 				fi
-			elif [[ -z ${opGrid["$((curx+1)),$((cury+1))"]} ]]; then
+			elif [[ -z ${opGrid["$((curx + 1)),$((cury + 1))"]} ]]; then
 				((++curx))
-				if (( curx > maxx )); then
+				if ((curx > maxx)); then
 					unset lastx
 					unset lasty
 					break
@@ -143,18 +143,18 @@ dropSand(){
 		unset info["drop"]
 	fi
 }
-part1(){
+part1() {
 	local -A grid
 	local -A info
 	local minx maxy minx maxx
 	buildGrid $1 grid info
 	minx=${info["min"]%,*}
-		miny=${info["min"]/#*,/}
+	miny=${info["min"]/#*,/}
 	maxx=${info["max"]%,*}
 	maxy=${info["max"]/#*,/}
 	c=0
 	while [[ 1 ]]; do
-		dropSand grid info $minx $miny $maxx $maxy $c
+		dropSand grid info $minx $miny $maxx $maxy $c 1
 		if [[ -z ${info["drop"]} ]]; then
 			break
 		fi
@@ -164,5 +164,47 @@ part1(){
 	echo $c
 }
 
+part2() {
+	local -A grid
+	local -A info
+	local minx maxy minx maxx
+	buildGrid $1 grid info
+	minx=${info["min"]%,*}
+	miny=${info["min"]/#*,/}
+	maxx=${info["max"]%,*}
+	maxy=${info["max"]/#*,/}
+	c=0
+	for i in $(seq $((minxx - 1000)) $((maxx + 1000))); do
+		grid["$i,$((maxy + 2))"]="#"
+	done
+	minx=$((minx - 1000))
+	maxx=$((maxx + 1000))
+	maxy=$((maxy + 2))
+	info["min"]="$minx,$miny"
+	info["max"]="$maxx,$maxy"
+
+	local minx_dropped maxx_dropped
+	while [[ 1 ]]; do
+		dropSand grid info $minx $miny $maxx $maxy $c 0
+		if [[ -z ${info["drop"]} ]]; then
+			break
+		fi
+		droppedx=${info["drop"]%,*}
+		droppedy=${info["drop"]/#*,/}
+
+		if [[ -z $minx_dropped ]] || ((droppedx < minx_dropped)); then
+			minx_dropped=$droppedx
+		fi
+		if [[ -z $maxx_dropped ]] || ((droppedx > maxx_dropped)); then
+			maxx_dropped=$droppedx
+		fi
+		((++c))
+	done
+	info["min"]="$minx_dropped,$miny"
+	info["max"]="$maxx_dropped,$maxy"
+	renderGrid grid info
+	echo $((1 + c))
+}
 
 echo part 1: "$(part1 $1)"
+echo part 2: "$(part2 $1)"
